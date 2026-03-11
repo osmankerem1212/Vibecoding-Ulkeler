@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ülke Keşfi</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --navy: #0f2342; --blue: #2563eb; --blue-light: #3b82f6;
+    --text: #1e293b; --muted: #64748b; --white: #ffffff;
+    --card-bg: rgba(255,255,255,0.93);
+    --shadow: 0 20px 60px rgba(15,35,66,0.15);
+    --transition: 0.3s cubic-bezier(0.4,0,0.2,1);
+  }
+  html { scroll-behavior: smooth; }
+  body { font-family: 'DM Sans', sans-serif; background: #d4e8f7; min-height: 100vh; display: flex; flex-direction: column; overflow-x: hidden; }
+
+  .sky-bg { position: fixed; inset: 0; z-index: 0; background: linear-gradient(170deg, #cce4f5 0%, #deedf8 30%, #e8f4fb 55%, #c5ddf0 80%, #b8d4eb 100%); }
+  .sky-bg::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse 80% 40% at 20% 30%, rgba(255,255,255,0.55) 0%, transparent 60%), radial-gradient(ellipse 60% 35% at 75% 20%, rgba(255,255,255,0.4) 0%, transparent 55%); }
+  .cloud { position: absolute; border-radius: 50px; background: rgba(255,255,255,0.6); filter: blur(2px); animation: drift linear infinite; }
+  .cloud::before, .cloud::after { content: ''; position: absolute; background: inherit; border-radius: 50%; }
+  .cloud-1 { width:200px;height:55px;top:15%;left:-220px;animation-duration:38s;opacity:0.7; }
+  .cloud-1::before{width:90px;height:75px;top:-35px;left:30px;} .cloud-1::after{width:70px;height:65px;top:-25px;right:35px;}
+  .cloud-2 { width:150px;height:45px;top:35%;left:-170px;animation-duration:55s;animation-delay:-12s;opacity:0.5; }
+  .cloud-2::before{width:70px;height:60px;top:-28px;left:20px;} .cloud-2::after{width:55px;height:50px;top:-18px;right:20px;}
+  .cloud-3 { width:250px;height:65px;top:60%;left:-270px;animation-duration:45s;animation-delay:-6s;opacity:0.45; }
+  .cloud-3::before{width:110px;height:90px;top:-40px;left:40px;} .cloud-3::after{width:85px;height:75px;top:-30px;right:45px;}
+  @keyframes drift { from{transform:translateX(0)} to{transform:translateX(calc(100vw + 300px))} }
+
+  nav { position:relative;z-index:100;background:linear-gradient(135deg,#0a1c35 0%,#0f2342 50%,#14305a 100%);padding:0 48px;height:68px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 4px 24px rgba(10,28,53,0.5); }
+  .nav-brand { display:flex;align-items:center;gap:12px;text-decoration:none; }
+  .nav-globe { width:38px;height:38px;flex-shrink:0; }
+  .nav-globe svg { width:100%;height:100%;filter:drop-shadow(0 0 8px rgba(59,130,246,0.5)); }
+  .nav-brand-text { font-family:'Playfair Display',serif;color:var(--white);font-size:1.25rem;font-weight:700;white-space:nowrap; }
+  .nav-links { display:flex;align-items:center;gap:8px;list-style:none; }
+  .nav-links a { color:rgba(255,255,255,0.75);text-decoration:none;font-size:0.9rem;font-weight:500;padding:8px 18px;border-radius:8px;transition:var(--transition);position:relative; }
+  .nav-links a::after { content:'';position:absolute;bottom:2px;left:50%;transform:translateX(-50%);width:0;height:2px;background:var(--blue-light);border-radius:2px;transition:var(--transition); }
+  .nav-links a:hover { color:var(--white);background:rgba(255,255,255,0.08); }
+  .nav-links a:hover::after,.nav-links a.active::after { width:calc(100% - 36px); }
+  .nav-links a.active { color:var(--white); }
+
+  main { position:relative;z-index:10;flex:1;display:flex;flex-direction:column;align-items:center;padding:64px 24px 80px;gap:32px; }
+  .hero-label { font-family:'Playfair Display',serif;font-size:clamp(1.6rem,4vw,2.4rem);color:var(--navy);font-weight:700;text-align:center;opacity:0;transform:translateY(-18px);animation:fadeDown 0.7s ease forwards 0.2s; }
+  .hero-sub { font-size:0.95rem;color:var(--muted);text-align:center;opacity:0;animation:fadeDown 0.7s ease forwards 0.4s;margin-top:-16px; }
+  @keyframes fadeDown { to{opacity:1;transform:translateY(0)} }
+  @keyframes fadeUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+
+  .search-box { width:100%;max-width:620px;display:flex;flex-direction:column;gap:16px;opacity:0;animation:fadeUp 0.7s ease forwards 0.5s; }
+  .input-wrap { position:relative; }
+  .search-input { width:100%;padding:18px 24px 18px 56px;border:2px solid rgba(37,99,235,0.15);border-radius:16px;font-family:'DM Sans',sans-serif;font-size:1.05rem;color:var(--text);background:rgba(255,255,255,0.88);backdrop-filter:blur(8px);outline:none;transition:var(--transition);box-shadow:0 4px 20px rgba(15,35,66,0.08); }
+  .search-input::placeholder { color:#94a3b8; }
+  .search-input:focus { border-color:var(--blue);background:rgba(255,255,255,0.97);box-shadow:0 0 0 4px rgba(37,99,235,0.12),0 8px 30px rgba(15,35,66,0.12); }
+  .input-icon { position:absolute;left:18px;top:50%;transform:translateY(-50%);color:#94a3b8;pointer-events:none; }
+  .search-btn { width:100%;padding:17px;background:linear-gradient(135deg,#1d4ed8 0%,#2563eb 50%,#3b82f6 100%);color:var(--white);border:none;border-radius:14px;font-family:'DM Sans',sans-serif;font-size:1rem;font-weight:600;letter-spacing:0.04em;cursor:pointer;transition:var(--transition);box-shadow:0 6px 24px rgba(37,99,235,0.35); }
+  .search-btn:hover:not(:disabled) { transform:translateY(-2px);box-shadow:0 10px 32px rgba(37,99,235,0.45); }
+  .search-btn:active { transform:translateY(0); }
+  .search-btn:disabled { opacity:0.65;cursor:not-allowed; }
+
+  .error-msg { display:none;width:100%;max-width:620px;background:rgba(254,242,242,0.95);border:1.5px solid #fca5a5;color:#dc2626;padding:14px 20px;border-radius:12px;font-size:0.9rem;font-weight:500;text-align:center;backdrop-filter:blur(8px); }
+  .error-msg.show { display:block;animation:shake 0.4s ease; }
+  @keyframes shake { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-7px)} 60%{transform:translateX(7px)} }
+
+  .loader { display:none;width:46px;height:46px;border:3px solid rgba(37,99,235,0.15);border-top-color:var(--blue);border-radius:50%;animation:spin 0.75s linear infinite; }
+  .loader.show { display:block; }
+  @keyframes spin { to{transform:rotate(360deg)} }
+
+  .country-card { display:none;width:100%;max-width:780px;background:var(--card-bg);backdrop-filter:blur(16px);border-radius:24px;box-shadow:var(--shadow),0 0 0 1px rgba(255,255,255,0.7) inset;overflow:hidden; }
+  .country-card.show { display:flex;animation:cardIn 0.5s cubic-bezier(0.34,1.56,0.64,1) forwards; }
+  @keyframes cardIn { from{opacity:0;transform:translateY(32px) scale(0.96)} to{opacity:1;transform:translateY(0) scale(1)} }
+  .card-flag { flex-shrink:0;width:280px;min-height:220px;overflow:hidden;background:#e8edf2;display:flex;align-items:center;justify-content:center; }
+  .card-flag img { width:100%;height:100%;min-height:220px;object-fit:cover;display:block;transition:transform 0.6s ease;image-rendering:auto; }
+  .country-card:hover .card-flag img { transform:scale(1.04); }
+  .card-info { flex:1;padding:32px 36px;display:flex;flex-direction:column; }
+  .country-name-title { font-family:'Playfair Display',serif;font-size:1.55rem;color:var(--navy);font-weight:700;margin-bottom:20px;letter-spacing:-0.01em; }
+  .info-row { display:flex;align-items:center;gap:12px;padding:11px 8px;border-bottom:1px solid rgba(15,35,66,0.07);transition:background var(--transition);border-radius:8px;margin-inline:-8px; }
+  .info-row:last-child { border-bottom:none; }
+  .info-row:hover { background:rgba(37,99,235,0.04); }
+  .info-icon { width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,#eff6ff,#dbeafe);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--blue); }
+  .info-icon svg { width:16px;height:16px; }
+  .info-label { font-weight:600;color:var(--navy);font-size:0.875rem;min-width:108px; }
+  .info-value { color:var(--muted);font-size:0.875rem; }
+
+  .all-section { display:none;width:100%;max-width:1100px;flex-direction:column;gap:28px; }
+  .all-section.show { display:flex; }
+  .section-title { font-family:'Playfair Display',serif;font-size:1.6rem;color:var(--navy);font-weight:700;text-align:center; }
+  .countries-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:18px; }
+  .mini-card { background:var(--card-bg);border-radius:16px;overflow:hidden;box-shadow:0 6px 24px rgba(15,35,66,0.1);cursor:pointer;transition:var(--transition);animation:fadeUp 0.4s ease both;border:1px solid rgba(255,255,255,0.7); }
+  .mini-card:hover { transform:translateY(-6px);box-shadow:0 16px 40px rgba(15,35,66,0.18); }
+  .mini-flag { width:100%;height:140px;overflow:hidden;background:#e8edf2;display:flex;align-items:center;justify-content:center; }
+  .mini-flag img { width:100%;height:100%;object-fit:cover;transition:transform 0.4s ease; }
+  .mini-card:hover .mini-flag img { transform:scale(1.08); }
+  .mini-info { padding:11px 14px 13px; }
+  .mini-name { font-weight:600;color:var(--navy);font-size:0.87rem;margin-bottom:2px; }
+  .mini-cap { font-size:0.77rem;color:var(--muted); }
+
+  footer { position:relative;z-index:10;text-align:center;padding:22px 24px;color:rgba(30,41,59,0.55);font-size:0.82rem;background:rgba(255,255,255,0.25);backdrop-filter:blur(8px);border-top:1px solid rgba(255,255,255,0.5); }
+  footer span { margin:0 6px;opacity:0.4; }
+
+  @media (max-width:640px) {
+    nav { padding:0 14px; }
+    .nav-links a { padding:6px 9px;font-size:0.8rem; }
+    .country-card { flex-direction:column; }
+    .card-flag { width:100%;min-height:220px; }
+    .card-info { padding:20px; }
+    main { padding:36px 14px 60px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="sky-bg">
+  <div class="cloud cloud-1"></div>
+  <div class="cloud cloud-2"></div>
+  <div class="cloud cloud-3"></div>
+</div>
+
+<nav>
+  <a href="#" class="nav-brand" onclick="goHome();return false;">
+    <div class="nav-globe">
+      <svg viewBox="0 0 38 38" fill="none">
+        <circle cx="19" cy="19" r="16" fill="url(#g1)" stroke="rgba(255,255,255,0.3)" stroke-width="1"/>
+        <ellipse cx="19" cy="19" rx="7" ry="16" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="1"/>
+        <path d="M3 19 Q19 24 35 19" stroke="rgba(255,255,255,0.5)" stroke-width="1" fill="none"/>
+        <path d="M5 12 Q19 17 33 12" stroke="rgba(255,255,255,0.4)" stroke-width="1" fill="none"/>
+        <path d="M5 26 Q19 31 33 26" stroke="rgba(255,255,255,0.4)" stroke-width="1" fill="none"/>
+        <defs>
+          <linearGradient id="g1" x1="3" y1="3" x2="35" y2="35">
+            <stop offset="0%" stop-color="#1e40af"/>
+            <stop offset="50%" stop-color="#2563eb"/>
+            <stop offset="100%" stop-color="#0ea5e9"/>
+          </linearGradient>
+        </defs>
+      </svg>
+    </div>
+    <span class="nav-brand-text">Ülke Keşfi</span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="#" id="nav-home" class="active" onclick="goHome();return false;">Ana Sayfa</a></li>
+    <li><a href="#" id="nav-all" onclick="goAll();return false;">Tüm Ülkeler</a></li>
+    <li><a href="#" onclick="return false;">Hakkında</a></li>
+  </ul>
+</nav>
+
+<main>
+  <div id="home-view" style="width:100%;display:flex;flex-direction:column;align-items:center;gap:32px;">
+    <div class="hero-label">Bir ülke arayın…</div>
+    <p class="hero-sub">Bayrakları, başkentleri, nüfusları ve daha fazlasını keşfedin</p>
+
+    <div class="search-box">
+      <div class="input-wrap">
+        <input id="inp" type="text" class="search-input"
+          placeholder="örn. Türkiye, Almanya, France, Japan…"
+          autocomplete="off" />
+        <span class="input-icon">
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <circle cx="11" cy="11" r="7"/><path d="m21 21-4.35-4.35"/>
+          </svg>
+        </span>
+      </div>
+      <button id="btn" class="search-btn" onclick="doSearch()">Ara</button>
+    </div>
+
+    <div id="err" class="error-msg"></div>
+    <div id="spin" class="loader"></div>
+
+    <div id="card" class="country-card">
+      <div class="card-flag"><img id="flag-img" src="" alt="Bayrak"/></div>
+      <div id="card-body" class="card-info"></div>
+    </div>
+  </div>
+
+  <div id="all-view" class="all-section">
+    <div class="section-title">Tüm Ülkeler</div>
+    <div id="all-spin" class="loader" style="align-self:center;"></div>
+    <div id="grid" class="countries-grid"></div>
+  </div>
+</main>
+
+<footer>
+  Ülke Keşfi <span>•</span> HTML CSS JavaScript ile yapıldı <span>•</span> API: REST Countries
+</footer>
+
+<script>
+  // Türkçe ülke adı → İngilizce çeviri tablosu (API İngilizce bekler)
+  const TR2EN = {
+    "türkiye":"Turkey","almanya":"Germany","fransa":"France","italya":"Italy",
+    "ispanya":"Spain","portekiz":"Portugal","hollanda":"Netherlands",
+    "belçika":"Belgium","isviçre":"Switzerland","avusturya":"Austria",
+    "polonya":"Poland","çekya":"Czech Republic","çek cumhuriyeti":"Czech Republic",
+    "macaristan":"Hungary","romanya":"Romania","bulgaristan":"Bulgaria",
+    "yunanistan":"Greece","hırvatistan":"Croatia","sırbistan":"Serbia",
+    "ukrayna":"Ukraine","rusya":"Russia","norveç":"Norway","isveç":"Sweden",
+    "finlandiya":"Finland","danimarka":"Denmark","irlanda":"Ireland",
+    "birleşik krallık":"United Kingdom","ingiltere":"United Kingdom",
+    "abd":"United States","amerika":"United States",
+    "amerika birleşik devletleri":"United States",
+    "kanada":"Canada","meksika":"Mexico","brezilya":"Brazil",
+    "arjantin":"Argentina","şili":"Chile","kolombiya":"Colombia",
+    "peru":"Peru","venezüela":"Venezuela","ekvador":"Ecuador",
+    "bolivya":"Bolivia","paraguay":"Paraguay","uruguay":"Uruguay",
+    "küba":"Cuba","japonya":"Japan","çin":"China",
+    "güney kore":"South Korea","kuzey kore":"North Korea",
+    "hindistan":"India","pakistan":"Pakistan","bangladeş":"Bangladesh",
+    "endonezya":"Indonesia","tayland":"Thailand","vietnam":"Vietnam",
+    "filipinler":"Philippines","malezya":"Malaysia","singapur":"Singapore",
+    "myanmar":"Myanmar","kamboçya":"Cambodia",
+    "suudi arabistan":"Saudi Arabia","iran":"Iran","irak":"Iraq",
+    "suriye":"Syria","lübnan":"Lebanon","ürdün":"Jordan",
+    "israil":"Israel","filistin":"Palestine","mısır":"Egypt",
+    "fas":"Morocco","cezayir":"Algeria","tunus":"Tunisia","libya":"Libya",
+    "nijerya":"Nigeria","etiyopya":"Ethiopia","kenya":"Kenya",
+    "tanzanya":"Tanzania","güney afrika":"South Africa","gana":"Ghana",
+    "kamerun":"Cameroon","fildişi sahili":"Ivory Coast","angola":"Angola",
+    "mozambik":"Mozambique","madagaskar":"Madagascar","zimbabve":"Zimbabwe",
+    "namibya":"Namibia","avustralya":"Australia","yeni zelanda":"New Zealand",
+    "azerbaycan":"Azerbaijan","gürcistan":"Georgia","ermenistan":"Armenia",
+    "kazakistan":"Kazakhstan","özbekistan":"Uzbekistan",
+    "afganistan":"Afghanistan","sri lanka":"Sri Lanka","nepal":"Nepal",
+    "küveyt":"Kuwait","katar":"Qatar","bahreyn":"Bahrain",
+    "birleşik arap emirlikleri":"United Arab Emirates","bae":"United Arab Emirates",
+    "umman":"Oman","yemen":"Yemen","türkmenistan":"Turkmenistan",
+    "tacikistan":"Tajikistan","kırgızistan":"Kyrgyzstan","moğolistan":"Mongolia",
+    "sudan":"Sudan","somali":"Somalia","eritre":"Eritrea","ruanda":"Rwanda",
+    "uganda":"Uganda","arnavutluk":"Albania","bosna hersek":"Bosnia and Herzegovina",
+    "karadağ":"Montenegro","kuzey makedonya":"North Macedonia",
+    "slovenya":"Slovenia","slovakya":"Slovakia","letonya":"Latvia",
+    "litvanya":"Lithuania","estonya":"Estonia","belarus":"Belarus",
+    "moldova":"Moldova","lüksemburg":"Luxembourg","malta":"Malta",
+    "kıbrıs":"Cyprus","izlanda":"Iceland",
+  };
+
+  const inp      = document.getElementById('inp');
+  const btn      = document.getElementById('btn');
+  const errEl    = document.getElementById('err');
+  const spinEl   = document.getElementById('spin');
+  const cardEl   = document.getElementById('card');
+  const flagImg  = document.getElementById('flag-img');
+  const cardBody = document.getElementById('card-body');
+
+  inp.addEventListener('keydown', e => { if (e.key === 'Enter') doSearch(); });
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // ANA ARAMA: REST Countries API'ye fetch
+  // ─────────────────────────────────────────────────────────────────────────
+  async function doSearch() {
+    const raw = inp.value.trim();
+    if (!raw) return;
+
+    hideCard();
+    hideErr();
+    setLoading(true);
+
+    // Türkçe adı İngilizce'ye çevir
+    const lower = raw.toLocaleLowerCase('tr-TR');
+    const query = TR2EN[lower] || raw;
+
+    try {
+      const response = await fetch(
+        `https://restcountries.com/v3.1/name/${encodeURIComponent(query)}`
+      );
+
+      if (!response.ok) {
+        showErr(`🌍 "<strong>${raw}</strong>" bulunamadı. Lütfen farklı bir isim deneyin.`);
+        return;
+      }
+
+      const countries = await response.json();
+      renderCard(countries[0]);
+
+    } catch (networkError) {
+      // Bu blok sadece gerçek ağ hatalarında (internet yok, CORS vs.) çalışır
+      console.error('Ağ hatası:', networkError);
+      showErr('🔌 Sunucuya ulaşılamadı. İnternet bağlantınızı kontrol edin.');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // KART RENDER: API'den gelen veriyi ekrana yaz
+  // ─────────────────────────────────────────────────────────────────────────
+  // İngilizce → Türkçe ülke adı (ters çeviri tablosu)
+  const EN2TR = Object.fromEntries(Object.entries(TR2EN).map(([tr,en]) => [en.toLowerCase(), tr.charAt(0).toUpperCase() + tr.slice(1)]));
+  // Ekstra düzeltmeler
+  const EXTRA_TR = {
+    "turkey":"Türkiye","germany":"Almanya","france":"Fransa","italy":"İtalya",
+    "spain":"İspanya","netherlands":"Hollanda","belgium":"Belçika","switzerland":"İsviçre",
+    "austria":"Avusturya","poland":"Polonya","czech republic":"Çekya","hungary":"Macaristan",
+    "romania":"Romanya","bulgaria":"Bulgaristan","greece":"Yunanistan","croatia":"Hırvatistan",
+    "serbia":"Sırbistan","ukraine":"Ukrayna","russia":"Rusya","norway":"Norveç",
+    "sweden":"İsveç","finland":"Finlandiya","denmark":"Danimarka","ireland":"İrlanda",
+    "united kingdom":"Birleşik Krallık","united states":"Amerika Birleşik Devletleri",
+    "canada":"Kanada","mexico":"Meksika","brazil":"Brezilya","argentina":"Arjantin",
+    "chile":"Şili","colombia":"Kolombiya","peru":"Peru","venezuela":"Venezüela",
+    "ecuador":"Ekvador","bolivia":"Bolivya","paraguay":"Paraguay","uruguay":"Uruguay",
+    "cuba":"Küba","japan":"Japonya","china":"Çin","south korea":"Güney Kore",
+    "north korea":"Kuzey Kore","india":"Hindistan","pakistan":"Pakistan",
+    "bangladesh":"Bangladeş","indonesia":"Endonezya","thailand":"Tayland",
+    "vietnam":"Vietnam","philippines":"Filipinler","malaysia":"Malezya",
+    "singapore":"Singapur","myanmar":"Myanmar","cambodia":"Kamboçya",
+    "saudi arabia":"Suudi Arabistan","iran":"İran","iraq":"Irak","syria":"Suriye",
+    "lebanon":"Lübnan","jordan":"Ürdün","israel":"İsrail","palestine":"Filistin",
+    "egypt":"Mısır","morocco":"Fas","algeria":"Cezayir","tunisia":"Tunus",
+    "libya":"Libya","nigeria":"Nijerya","ethiopia":"Etiyopya","kenya":"Kenya",
+    "tanzania":"Tanzanya","south africa":"Güney Afrika","ghana":"Gana",
+    "cameroon":"Kamerun","ivory coast":"Fildişi Sahili","angola":"Angola",
+    "mozambique":"Mozambik","madagascar":"Madagaskar","zimbabwe":"Zimbabve",
+    "namibia":"Namibya","australia":"Avustralya","new zealand":"Yeni Zelanda",
+    "azerbaijan":"Azerbaycan","georgia":"Gürcistan","armenia":"Ermenistan",
+    "kazakhstan":"Kazakistan","uzbekistan":"Özbekistan","afghanistan":"Afganistan",
+    "sri lanka":"Sri Lanka","nepal":"Nepal","kuwait":"Küveyt","qatar":"Katar",
+    "bahrain":"Bahreyn","united arab emirates":"Birleşik Arap Emirlikleri",
+    "oman":"Umman","yemen":"Yemen","turkmenistan":"Türkmenistan",
+    "tajikistan":"Tacikistan","kyrgyzstan":"Kırgızistan","mongolia":"Moğolistan",
+    "sudan":"Sudan","somalia":"Somali","eritrea":"Eritre","rwanda":"Ruanda",
+    "uganda":"Uganda","albania":"Arnavutluk","bosnia and herzegovina":"Bosna Hersek",
+    "montenegro":"Karadağ","north macedonia":"Kuzey Makedonya","slovenia":"Slovenya",
+    "slovakia":"Slovakya","latvia":"Letonya","lithuania":"Litvanya",
+    "estonia":"Estonya","belarus":"Belarus","moldova":"Moldova",
+    "luxembourg":"Lüksemburg","malta":"Malta","cyprus":"Kıbrıs","iceland":"İzlanda",
+    "portugal":"Portekiz","afghanistan":"Afganistan","laos":"Laos",
+    "senegal":"Senegal","tanzania":"Tanzanya","zambia":"Zambiya","botswana":"Botsvana",
+    "djibouti":"Cibuti","comoros":"Komoros","eritrea":"Eritre",
+  };
+
+  function trName(englishName) {
+    const key = englishName.toLowerCase();
+    return EXTRA_TR[key] || EN2TR[key] || englishName;
+  }
+
+  function renderCard(c) {
+    const adEn    = c.name?.common || '—';
+    const ad      = trName(adEn);
+    const baskent = c.capital?.[0] || '—';
+    const nufus   = c.population ? c.population.toLocaleString('tr-TR') : '—';
+    const BOLGE_TR = {
+      'Africa':'Afrika','Americas':'Amerika','Asia':'Asya','Europe':'Avrupa',
+      'Oceania':'Okyanusya','Antarctic':'Antarktika',
+      'Northern Africa':'Kuzey Afrika','Southern Africa':'Güney Afrika',
+      'Western Africa':'Batı Afrika','Eastern Africa':'Doğu Afrika',
+      'Middle Africa':'Orta Afrika','Northern America':'Kuzey Amerika',
+      'South America':'Güney Amerika','Central America':'Orta Amerika',
+      'Caribbean':'Karayipler','Western Europe':'Batı Avrupa',
+      'Eastern Europe':'Doğu Avrupa','Northern Europe':'Kuzey Avrupa',
+      'Southern Europe':'Güney Avrupa','Central Europe':'Orta Avrupa',
+      'Western Asia':'Batı Asya','Eastern Asia':'Doğu Asya',
+      'Southern Asia':'Güney Asya','South-Eastern Asia':'Güneydoğu Asya',
+      'Central Asia':'Orta Asya','Melanesia':'Melanezya',
+      'Micronesia':'Mikronezya','Polynesia':'Polinezya',
+      'Australia and New Zealand':'Avustralya ve Yeni Zelanda',
+    };
+    const bolge = [c.region, c.subregion]
+      .filter(Boolean)
+      .map(r => BOLGE_TR[r] || r)
+      .join(' / ') || '—';
+    const para    = c.currencies
+      ? Object.values(c.currencies).map(x => `${x.name} (${x.symbol || '?'})`).join(', ')
+      : '—';
+    const dil     = c.languages ? Object.values(c.languages).join(', ') : '—';
+    const bayrak  = c.flags?.svg || c.flags?.png || '';
+
+    flagImg.src = bayrak;
+    flagImg.alt = `${adEn} bayrağı`;
+
+    const satirlar = [
+      { ikon: iPin(),  etiket: 'Ülke',        deger: ad },
+      { ikon: iKap(),  etiket: 'Başkent',     deger: baskent },
+      { ikon: iGlb(),  etiket: 'Nüfus',       deger: nufus },
+      { ikon: iBol(),  etiket: 'Bölge',       deger: bolge },
+      { ikon: iPar(),  etiket: 'Para Birimi', deger: para },
+      { ikon: iDil(),  etiket: 'Dil',         deger: dil },
+    ];
+
+    cardBody.innerHTML =
+      `<div class="country-name-title">${ad}</div>` +
+      satirlar.map(s =>
+        `<div class="info-row">
+          <div class="info-icon">${s.ikon}</div>
+          <span class="info-label">${s.etiket}</span>
+          <span class="info-value">${s.deger}</span>
+        </div>`
+      ).join('');
+
+    cardEl.classList.add('show');
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // TÜM ÜLKELER: API'den tümünü çek
+  // ─────────────────────────────────────────────────────────────────────────
+  async function goAll() {
+    setNav('all');
+    document.getElementById('home-view').style.display = 'none';
+    const allView = document.getElementById('all-view');
+    const grid    = document.getElementById('grid');
+    const allSpin = document.getElementById('all-spin');
+
+    allView.classList.add('show');
+    if (grid.children.length > 0) return; // zaten yüklüyse tekrar yükleme
+
+    allSpin.classList.add('show');
+
+    try {
+      const res  = await fetch('https://restcountries.com/v3.1/all?fields=name,capital,flags');
+      const data = await res.json();
+      data.sort((a, b) => a.name.common.localeCompare(b.name.common));
+      allSpin.classList.remove('show');
+
+      data.forEach((c, i) => {
+        const mc = document.createElement('div');
+        mc.className = 'mini-card';
+        mc.style.animationDelay = `${Math.min(i * 0.015, 1.5)}s`;
+        mc.innerHTML =
+          `<div class="mini-flag">
+            <img src="${c.flags?.svg || c.flags?.png || ''}" alt="${c.name.common}" loading="lazy"/>
+          </div>
+          <div class="mini-info">
+            <div class="mini-name">${c.name.common}</div>
+            <div class="mini-cap">${c.capital?.[0] || '—'}</div>
+          </div>`;
+        mc.addEventListener('click', () => {
+          goHome();
+          inp.value = c.name.common;
+          doSearch();
+        });
+        grid.appendChild(mc);
+      });
+
+    } catch (e) {
+      allSpin.classList.remove('show');
+      grid.innerHTML = '<p style="color:#dc2626;text-align:center;grid-column:1/-1;padding:20px">Ülkeler yüklenemedi. İnternet bağlantınızı kontrol edin.</p>';
+    }
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // YARDIMCI FONKSİYONLAR
+  // ─────────────────────────────────────────────────────────────────────────
+  function goHome() {
+    document.getElementById('home-view').style.display = 'flex';
+    document.getElementById('all-view').classList.remove('show');
+    setNav('home');
+  }
+  function setNav(a) {
+    document.getElementById('nav-home').classList.toggle('active', a === 'home');
+    document.getElementById('nav-all').classList.toggle('active',  a === 'all');
+  }
+  function setLoading(v) {
+    spinEl.classList.toggle('show', v);
+    btn.disabled = v;
+    btn.textContent = v ? 'Aranıyor…' : 'Ara';
+  }
+  function showErr(html) {
+    errEl.innerHTML = html;
+    errEl.classList.remove('show');
+    void errEl.offsetWidth; // reflow ile animasyonu yenile
+    errEl.classList.add('show');
+  }
+  function hideErr()  { errEl.classList.remove('show'); }
+  function hideCard() { cardEl.classList.remove('show'); }
+
+  // SVG ikonlar
+  function iPin() { return `<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>`; }
+  function iKap() { return `<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 21h18M5 21V7l7-4 7 4v14M9 21v-4h6v4"/></svg>`; }
+  function iGlb() { return `<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3.6 9h16.8M3.6 15h16.8"/><ellipse cx="12" cy="12" rx="4" ry="9"/></svg>`; }
+  function iBol() { return `<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>`; }
+  function iPar() { return `<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M14.5 9a2.5 2.5 0 00-5 0v6a2.5 2.5 0 005 0M9 12h6"/></svg>`; }
+  function iDil() { return `<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>`; }
+</script>
+</body>
+</html>
